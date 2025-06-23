@@ -12,6 +12,17 @@ builder.Services.AddSwaggerGen();
 builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
 builder.Services.AddOcelot();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSandeshRequest", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials();
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -28,12 +39,15 @@ app.Use(async (context, next) =>
 });
 
 
-app.UseOcelot();
+
+app.UseCors("AllowSandeshRequest");
 
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
 app.MapControllers();
+
+await app.UseOcelot();
 
 app.Run();
